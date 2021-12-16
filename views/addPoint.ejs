@@ -1,0 +1,130 @@
+<div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+  <header class="mdl-layout__header mdl-shadow--6dp">
+    <div class="mdl-layout__header-row">
+      <!-- Title -->
+      <img class="mdl-layout-title" src="/src/whiteLogo.png" alt="logo" style="height:110%;">
+      <!-- Add spacer, to align navigation to the right -->
+      <div class="mdl-layout-spacer"></div>
+      <!-- Navigation. We hide it in small screens. -->
+      <nav class="mdl-navigation mdl-layout--large-screen-only">
+        <a class="mdl-navigation__link" href="/">
+          <p class="underlined">Carte</p>
+        </a>
+        <% if (user) { %>
+          <a class="mdl-navigation__link" href="/dashboard">
+            <p class="underlined">Dashboard</p>
+          </a>
+          <a class="mdl-navigation__link" href="/addPoint">
+            <p class="underlined">Ajouter un lieu</p>
+          </a>
+          <a class="mdl-navigation__link" href="/users/logout">
+            <p class="underlined">Déconnexion</p>
+          </a>
+        <% } %>
+        <% if (!user) { %>
+          <a class="mdl-navigation__link" href="/users/login">
+            <p class="underlined">Connexion</p>
+          </a>
+        <% } %>
+      </nav>
+    </div>
+  </header>
+  <div class="mdl-layout__drawer">
+    <div class="mdl-layout-title">
+      <img src="/src/logo.png" alt="logo" id="logo">
+    </div>
+    <nav class="mdl-navigation">
+      <a class="mdl-navigation__link" href="/">Carte</a>
+      <% if (user) { %>
+        <a class="mdl-navigation__link" href="/dashboard">Dashboard</a>
+        <a class="mdl-navigation__link" href="/addPoint">Ajouter un lieu</a>
+        <a class="mdl-navigation__link" href="/users/logout">Déconnexion</a>
+      <% } %>
+      <% if (!user) { %>
+        <a class="mdl-navigation__link" href="/users/login">Connexion</a>
+      <% } %>
+    </nav>
+  </div>
+  <main class="mdl-layout__content">
+    <div class="page-content">
+      <div class="mdl-progress mdl-js-progress mdl-progress__indeterminate" id="loading"></div>
+      <%- include('./partials/messages'); %>
+        <div style="text-align: center;">
+          <i class="material-icons top" id="loginIcon">add_location</i>
+        </div>
+        <form action="/addPoint" method="POST" id="form" enctype="multipart/form-data">
+          <div class="mdl-grid">
+            <div class="mdl-textfield mdl-js-textfield mdl-cell mdl-cell--4-col-phone mdl-cell--6-col-tablet mdl-cell--7-col-desktop" style="margin-left:auto; margin-right:auto;">
+              <input class="mdl-textfield__input" type="text" id="name" name="name" value="<%= typeof _body != 'undefined' ? _body.name : '' %>">
+              <label class="mdl-textfield__label" for="name">Nom</label>
+            </div>
+          </div>
+          <div class="mdl-grid">
+            <div class="mdl-textfield mdl-js-textfield mdl-cell mdl-cell--4-col-phone mdl-cell--6-col-tablet mdl-cell--7-col-desktop" style="margin-left:auto; margin-right:auto;">
+              <input class="mdl-textfield__input" type="text" id="address" name="address" value="<%= typeof _body != 'undefined' ? _body.address : '' %>">
+              <label class="mdl-textfield__label" for="address">Adresse</label>
+            </div>
+          </div>
+          <div class="mdl-grid">
+            <div class="mdl-textfield mdl-js-textfield mdl-cell mdl-cell--4-col-phone mdl-cell--2-col-tablet mdl-cell--3-col-desktop" style="margin-left:auto;">
+              <input class="mdl-textfield__input" type="text" id="cp" name="cp" value="<%= typeof _body != 'undefined' ? _body.cp : '' %>">
+              <label class="mdl-textfield__label" for="cp">Code Postal</label>
+            </div>
+            <div class="mdl-textfield mdl-js-textfield mdl-cell mdl-cell--4-col-phone mdl-cell--4-col-tablet mdl-cell--4-col-desktop" style="margin-right:auto;">
+              <input class="mdl-textfield__input" type="text" id="city" name="city" value="<%= typeof _body != 'undefined' ? _body.city : '' %>">
+              <label class="mdl-textfield__label" for="city">Ville</label>
+            </div>
+          </div>
+          <div class="mdl-grid">
+            <div class="mdl-textfield mdl-js-textfield mdl-cell mdl-cell--4-col-phone mdl-cell--8-col-tablet mdl-cell--8-col-desktop" style="margin-left:auto; margin-right:auto;">
+              <div id="editor"></div>
+            </div>
+          </div>
+          <input name="description" type="hidden">
+          <input name="descriptionHTML" type="hidden">
+
+          <div class="mdl-grid">
+            <div class="mdl-textfield mdl-js-textfield mdl-cell mdl-cell--7-col" style="margin-left:auto; margin-right:auto;">
+              <div id="fileInputDiv">
+                <p>Photo principale :</p>
+                <label class="mdl-button mdl-js-button mdl-button--icon mdl-button--file" id="fileInputLabel">
+                  <i class="material-icons">attach_file</i><input name='avatar' type="file" style="display: none;">
+                </label>
+              </div>
+            </div>
+          </div>
+          <div class="center bottom">
+            <button class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored" type="submit">
+              Ajouter
+            </button>
+          </div>
+        </form>
+      </div>
+    </main>
+  </div>
+
+  <script type="text/javascript">
+    var quill = new Quill('#editor', {
+      modules: {
+        toolbar: [
+          ['bold', 'italic', 'image']
+        ]
+      },
+      placeholder: 'Description',
+      theme: 'snow'
+    });
+
+    var form = document.querySelector('form');
+    form.onsubmit = function() {
+      document.getElementById('loading').classList.add("progress");
+      var description = document.querySelector('input[name=description]');
+      // var descriptionHTML = document.querySelector('input[name=descriptionHTML]');
+      description.value = JSON.stringify(quill.getContents());
+      // descriptionHTML.value = quill.root.innerHTML;
+      return;
+    };
+
+    if (<%= typeof _body != 'undefined' ? true : false %>) {
+      console.log('ok');
+    }
+  </script>

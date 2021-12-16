@@ -1,0 +1,59 @@
+<div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+  <header class="mdl-layout__header mdl-shadow--6dp">
+    <div class="mdl-layout__header-row">
+      <!-- Title -->
+      <img class="mdl-layout-title" src="/src/whiteLogo.png" alt="logo" style="height:110%;">
+      <!-- Add spacer, to align navigation to the right -->
+      <div class="mdl-layout-spacer"></div>
+      <!-- Navigation. We hide it in small screens. -->
+      <nav class="mdl-navigation mdl-layout--large-screen-only">
+        <a class="mdl-navigation__link" href="/">
+          <p class="underlined">Carte</p>
+        </a>
+        <a class="mdl-navigation__link" href="/users/login">
+          <p class="underlined">Connexion</p>
+        </a>
+      </nav>
+    </div>
+  </header>
+  <div class="mdl-layout__drawer">
+    <div class="mdl-layout-title">
+      <img src="/src/logo.png" alt="logo" id="logo">
+    </div>
+    <nav class="mdl-navigation">
+      <a class="mdl-navigation__link" href="/">
+        <p class="underlined">Carte</p>
+      </a>
+      <a class="mdl-navigation__link" href="/users/login">
+        <p class="underlined">Connexion</p>
+      </a>
+    </nav>
+  </div>
+  <main class="mdl-layout__content">
+    <div class="page-content">
+      <form action="/users/login" method="POST">
+        <%- include('./partials/messages'); %>
+          <div style="text-align: center;">
+            <i class="material-icons top" id="loginIcon">login</i>
+          </div>
+          <div class="mdl-grid top" style="justify-content: center;">
+            <div class="mdl-textfield mdl-js-textfield mdl-cell mdl-cell--5-col">
+              <input class="mdl-textfield__input" type="email" id="email" name="email">
+              <label class="mdl-textfield__label" for="email">Email</label>
+            </div>
+          </div>
+          <div class="mdl-grid top" style="justify-content: center;">
+            <div class="mdl-textfield mdl-js-textfield mdl-cell mdl-cell--5-col">
+              <input class="mdl-textfield__input" type="password" id="password" name="password">
+              <label class="mdl-textfield__label" for="password">Mot de passe</label>
+            </div>
+          </div>
+          <div class="mdl-grid top" style="justify-content: center;">
+            <button type="submit" class="mdl-button mdl-button--colored mdl-button--raised mdl-js-button mdl-js-ripple-effect">
+              Connexion
+            </button>
+          </div>
+        </form>
+      </div>
+    </main>
+  </div>

@@ -1,0 +1,131 @@
+<div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+  <header class="mdl-layout__header mdl-shadow--6dp">
+    <div class="mdl-layout__header-row">
+      <!-- Title -->
+      <img class="mdl-layout-title" src="/src/whiteLogo.png" alt="logo" style="height:110%;">
+      <!-- Add spacer, to align navigation to the right -->
+      <div class="mdl-layout-spacer"></div>
+      <!-- Navigation. We hide it in small screens. -->
+      <nav class="mdl-navigation mdl-layout--large-screen-only">
+        <a class="mdl-navigation__link" href="/">
+          <p class="underlined">Carte</p>
+        </a>
+        <% if (user) { %>
+          <a class="mdl-navigation__link" href="/dashboard">
+            <p class="underlined">Dashboard</p>
+          </a>
+          <a class="mdl-navigation__link" href="/addPoint">
+            <p class="underlined">Ajouter un lieu</p>
+          </a>
+          <a class="mdl-navigation__link" href="/users/logout">
+            <p class="underlined">Déconnexion</p>
+          </a>
+        <% } %>
+        <% if (!user) { %>
+          <a class="mdl-navigation__link" href="/users/login">
+            <p class="underlined">Connexion</p>
+          </a>
+        <% } %>
+      </nav>
+    </div>
+  </header>
+  <div class="mdl-layout__drawer">
+    <div class="mdl-layout-title">
+      <img src="/src/logo.png" alt="logo" id="logo">
+    </div>
+    <nav class="mdl-navigation">
+      <a class="mdl-navigation__link" href="/">Carte</a>
+      <% if (user) { %>
+        <a class="mdl-navigation__link" href="/dashboard">Dashboard</a>
+        <a class="mdl-navigation__link" href="/addPoint">Ajouter un lieu</a>
+        <a class="mdl-navigation__link" href="/users/logout">Déconnexion</a>
+      <% } %>
+      <% if (!user) { %>
+        <a class="mdl-navigation__link" href="/users/login">Connexion</a>
+      <% } %>
+    </nav>
+  </div>
+  <main class="mdl-layout__content">
+    <div class="page-content">
+      <div style="height: 100vh;" id="map"></div>
+    </div>
+  </main>
+</div>
+
+<script type="text/javascript">
+  var points = <%- JSON.stringify(points) %>;
+
+  var pos;
+
+  var pointOfInterestIcon = L.icon({
+    iconUrl: '/src/pointOfInterest.png',
+    iconSize: [
+      42, 42
+    ],
+    iconAnchor: [
+      21, 42
+    ],
+    popupAnchor: [0, -42]
+  });
+
+  var geolocationIcon = L.icon({
+    iconUrl: '/src/geolocation.png',
+    iconSize: [
+      42, 42
+    ],
+    iconAnchor: [21, 21]
+  });
+
+  function closePopups() {
+    mymap.closePopup();
+  }
+
+  function onLocationFound(e) {
+    if (pos != undefined) {
+      mymap.removeLayer(pos);
+    }
+    console.log(pos);
+    pos = L.marker(e.latlng, {icon: geolocationIcon}).addTo(mymap);
+    mymap.addLayer(pos);
+    mymap.stopLocate();
+  }
+
+  function onLocationError(e) {
+    console.log(e.message);
+    mymap.stopLocate()
+  }
+
+  var mymap = L.map('map').setView([
+    44.283325, 0.7630461
+  ], 15);
+
+  mymap.locate({setView: false});
+  mymap.on('locationfound', onLocationFound);
+  mymap.on('locationerror', onLocationError);
+
+  L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoiYnVsbHk0MiIsImEiOiJjanJycDZwenIxd29rM3ludHJvNXhiem1kIn0.udyct1AnSScGg3eIa3VQDw', {
+    attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+    maxZoom: 20,
+    id: 'mapbox/streets-v11',
+    tileSize: 512,
+    zoomOffset: -1,
+    accessToken: 'your.mapbox.access.token'
+  }).addTo(mymap);
+
+  L.easyButton('<i class="material-icons mapBtn">gps_fixed</i>', function(btn, mymap) {
+    mymap.locate({setView: true, maxZoom: 16});
+  }).addTo(mymap);
+
+  for (var i = 0; i < points.length; i++) {
+    var marker = L.marker([
+      points[i].position.lng,
+      points[i].position.lat
+    ], {icon: pointOfInterestIcon}).addTo(mymap);
+    marker.bindPopup(
+      "<div style='max-width: 90vw;' class='demo-card-wide mdl-card mdl-shadow--6dp'><div class='mdl-card__title' style='background:url(\"pictures/" + points[i].avatar + "\") center / cover'><h2 class='mdl-card__title-text'>" + points[i].name + "</h2></di" +
+          "v><div class='mdl-card__supporting-text'>" + points[i].address + "</div><div class='mdl-card__actions mdl-card--border'><a class='mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect' href='/point/" + points[i]._id + "'>Visiter</a></di" +
+          "v><div class='mdl-card__menu'><button class='mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect' onclick='closePopups()'><i class='material-icons'>close</i></button></div></div>",
+      {maxWidth: "auto"}
+    );
+  }
+</script>

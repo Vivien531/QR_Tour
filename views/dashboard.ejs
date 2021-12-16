@@ -1,0 +1,218 @@
+<% points.forEach(function(point){ %>
+  <dialog class="mdl-dialog dialog" id="dialog_<%= point._id %>">
+    <h3 class="mdl-dialog__title"><%= point.name %></h3>
+    <div class="mdl-dialog__content">
+      <div class="qr" style="transform: scale(1);" id="placeHolder_<%= point._id %>"></div>
+    </div>
+    <div class="mdl-dialog__actions">
+      <button type="button" class="mdl-button mdl-button--colored" autofocus="autofocus">Fermer</button>
+    </div>
+  </dialog>
+
+  <dialog class="mdl-dialog deleteDialog" id="delete_<%= point._id %>">
+    <h3 class="mdl-dialog__title"><%= point.name %></h3>
+    <div class="mdl-dialog__content">
+      <p>
+        Supprimer le point ? Cette action est irréversible.
+      </p>
+    </div>
+    <div class="mdl-dialog__actions">
+      <button class="mdl-button mdl-button--colored" autofocus="autofocus">Annuler</button>
+      <a type="button" class="mdl-button mdl-button--colored" href="/deletePoint/<%= point._id %>">Supprimer</a>
+    </div>
+  </dialog>
+
+  <dialog class="mdl-dialog activateDialog" id="activate-<%= point._id %>">
+    <h3 class="mdl-dialog__title"><%= point.name %></h3>
+    <div class="mdl-dialog__content">
+      <form action="/activatePoint/<%= point._id %>" method="POST" id="form_<%= point._id %>">
+        <div style="display:flex; justify-content:space-around;">
+          <p>Afficher le point sur la carte :
+          </p>
+          <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="switch-<%= point._id %>" style="width: auto;">
+            <input name="display" type="checkbox" id="switch-<%= point._id %>" class="mdl-switch__input" <%= (point.display) ? 'checked' : '' %>>
+            <!-- <span class="mdl-switch__label"></span> -->
+          </label>
+        </div>
+      </form>
+    </div>
+    <div class="mdl-dialog__actions">
+      <button class="mdl-button mdl-button--colored" autofocus="autofocus">Annuler</button>
+      <button type="submit" form="form_<%= point._id %>" class="mdl-button mdl-button--colored">Confirmer</button>
+    </div>
+  </dialog>
+  <% }); %>
+
+    <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+      <header class="mdl-layout__header mdl-shadow--6dp">
+        <div class="mdl-layout__header-row">
+          <!-- Title -->
+          <img class="mdl-layout-title" src="/src/whiteLogo.png" alt="logo" style="height:110%;">
+          <!-- Add spacer, to align navigation to the right -->
+          <div class="mdl-layout-spacer"></div>
+          <!-- Navigation. We hide it in small screens. -->
+          <nav class="mdl-navigation mdl-layout--large-screen-only">
+            <a class="mdl-navigation__link" href="/">
+              <p class="underlined">Carte</p>
+            </a>
+            <% if (user) { %>
+              <a class="mdl-navigation__link" href="/dashboard">
+                <p class="underlined">Dashboard</p>
+              </a>
+              <a class="mdl-navigation__link" href="/addPoint">
+                <p class="underlined">Ajouter un lieu</p>
+              </a>
+              <a class="mdl-navigation__link" href="/users/logout">
+                <p class="underlined">Déconnexion</p>
+              </a>
+            <% } %>
+            <% if (!user) { %>
+              <a class="mdl-navigation__link" href="/users/login">
+                <p class="underlined">Connexion</p>
+              </a>
+            <% } %>
+          </nav>
+        </div>
+      </header>
+      <div class="mdl-layout__drawer">
+        <div class="mdl-layout-title">
+          <img src="/src/logo.png" alt="logo" id="logo">
+        </div>
+        <nav class="mdl-navigation">
+          <a class="mdl-navigation__link" href="/">Carte</a>
+          <% if (user) { %>
+            <a class="mdl-navigation__link" href="/dashboard">Dashboard</a>
+            <a class="mdl-navigation__link" href="/addPoint">Ajouter un lieu</a>
+            <a class="mdl-navigation__link" href="/users/logout">Déconnexion</a>
+          <% } %>
+          <% if (!user) { %>
+            <a class="mdl-navigation__link" href="/users/login">Connexion</a>
+          <% } %>
+        </nav>
+      </div>
+      <main class="mdl-layout__content">
+        <div class="mdl-progress mdl-js-progress mdl-progress__indeterminate" id="loading"></div>
+        <div class="page-content">
+          <%- include('./partials/messages'); %>
+
+            <div class="top" style="text-align: center;">
+              <i class="material-icons" id="loginIcon">dashboard</i>
+            </div>
+
+            <div class="mdl-grid" style="justify-content: center; align-items: baseline;">
+              <form action="/search" method="POST" id="searchForm" style="margin-right:10px">
+                <div class="mdl-textfield mdl-js-textfield mdl-textfield--expandable">
+                  <label class="mdl-button mdl-js-button mdl-button--icon" for="search">
+                    <i class="material-icons">search</i>
+                  </label>
+                  <div class="mdl-textfield__expandable-holder">
+                    <input class="mdl-textfield__input" type="text" id="search" name="search">
+                    <label class="mdl-textfield__label" for="sample-expandable">Expandable Input</label>
+                  </div>
+                </div>
+              </form>
+              <button type="submit" form="searchForm" class="mdl-button mdl-button--colored mdl-button--raised mdl-js-button mdl-js-ripple-effect" style="margin-left:10px; margin-right:10px;">Rechercher</button>
+              <a type="button" href="/dashboard" class="mdl-button mdl-button--colored mdl-button--raised mdl-js-button mdl-js-ripple-effect" style="margin-left:10px">Tout Afficher</a>
+            </div>
+
+            <div class="mdl-grid top" style="justify-content: space-around;">
+              <% points.forEach(function(point){ %>
+                <div class="mdl-cell mdl-cell--4-col-phone mdl-cell--4-col-tablet mdl-cell--5-col-desktop bottom">
+                  <div class="demo-card-wide mdl-card mdl-shadow--6dp">
+                    <div class="mdl-card__title" style="background:url('pictures/<%= point.avatar %>') center / cover">
+                      <h2 class="mdl-card__title-text"><%= point.name %></h2>
+                    </div>
+                    <div class="mdl-card__supporting-text">
+                      <%= point.address %>
+                    </div>
+                    <div class="mdl-card__actions mdl-card--border">
+                      <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect" href="/point/<%= point._id %>">Afficher</a>
+                      <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect" href="/updatePoint/<%= point._id %>">Modifier</a>
+                      <button class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect activate-button" id="-<%= point._id %>">Activer</button>
+                      <button class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect dialog-button" id="<%= point._id %>">QR Code</button>
+                      <button class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect delete-button" id="_<%= point._id %>">Supprimer</button>
+                    </div>
+                  </div>
+                </div>
+                <% }); %>
+                </div>
+              </div>
+            </main>
+          </div>
+
+          <script type="text/javascript">
+            var deleteButtons = document.getElementsByClassName('activate-button');
+            var deleteDialogs = document.getElementsByClassName('activateDialog');
+
+            for (var i = 0; i < deleteDialogs.length; i++) {
+              if (!deleteDialogs[i].showModal) {
+                dialogPolyfill.registerDialog(deleteDialogs[i]);
+              }
+              deleteDialogs[i].querySelector('button:not([disabled])').addEventListener('click', function(event) {
+                event.target.parentElement.parentElement.close();
+              });
+            }
+
+            for (var i = 0; i < deleteButtons.length; i++) {
+              deleteButtons[i].addEventListener('click', function(event) {
+                var el = document.getElementById('activate' + event.target.parentElement.id);
+                el.showModal();
+              });
+            }
+
+            var activateButtons = document.getElementsByClassName('delete-button');
+            var activateDialogs = document.getElementsByClassName('deleteDialog');
+
+            for (var i = 0; i < activateDialogs.length; i++) {
+              if (!activateDialogs[i].showModal) {
+                dialogPolyfill.registerDialog(activateDialogs[i]);
+              }
+              activateDialogs[i].querySelector('button:not([disabled])').addEventListener('click', function(event) {
+                event.target.parentElement.parentElement.close();
+              });
+            }
+
+            for (var i = 0; i < activateButtons.length; i++) {
+              activateButtons[i].addEventListener('click', function(event) {
+                var el = document.getElementById('delete' + event.target.parentElement.id);
+                el.showModal();
+              });
+            }
+
+            var points = <%- JSON.stringify(points) %>;
+
+            for (var i = 0; i < points.length; i++) {
+              var link = 'tourisme.avkservices.fr/point/' + points[i]._id;
+              var typeNumber = 4;
+              var errorCorrectionLevel = 'L';
+              var qr = qrcode(typeNumber, errorCorrectionLevel);
+              qr.addData(link);
+              qr.make();
+              document.getElementById('placeHolder_' + points[i]._id).innerHTML = qr.createImgTag();
+            }
+
+            var dialogButtons = document.getElementsByClassName('dialog-button');
+            var dialogs = document.getElementsByClassName('dialog');
+
+            for (var i = 0; i < dialogs.length; i++) {
+              if (!dialogs[i].showModal) {
+                dialogPolyfill.registerDialog(dialogs[i]);
+              }
+              dialogs[i].querySelector('button:not([disabled])').addEventListener('click', function(event) {
+                event.target.parentElement.parentElement.close();
+              });
+            }
+
+            for (var i = 0; i < dialogButtons.length; i++) {
+              dialogButtons[i].addEventListener('click', function(event) {
+                var el = document.getElementById('dialog_' + event.target.parentElement.id);
+                el.showModal();
+              });
+            }
+
+            var search = document.getElementById('searchForm');
+
+            search.onsubmit = function() {
+              document.getElementById('loading').classList.add("progress");
+            };
+          </script>

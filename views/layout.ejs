@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+  <link rel="stylesheet" href="/src/leaflet/leaflet.css" />
+  <link rel="stylesheet" href="/src/easy-button.css">
+  <link href="/src/quill.snow.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+  <link rel="stylesheet" href="/src/mdl/material.min.css" />
+  <link rel="stylesheet" href="/src/dialog-polyfill.css" />
+  <link rel="stylesheet" href="/css/master.css">
+  <link rel="icon" type="image/png" href="/src/tabLogo.png" />
+  <title>AVK Tourisme</title>
+</head>
+
+<body>
+  <script src="/src/jquery-3.5.1.min.js"></script>
+  <script src="/src/leaflet/leaflet.js"></script>
+  <script src="/src/easy-button.js"></script>
+  <script src="/src/quill.js"></script>
+  <script src="/src/qrcode-generator/qrcode.js"></script>
+  <script src="/src/mdl/material.min.js"></script>
+  <script src="/src/dialog-polyfill.js"></script>
+
+  <%- body %>
+
+  <script type="text/javascript">
+    var close = document.getElementsByClassName("closebtn");
+    var i;
+
+    for (i = 0; i < close.length; i++) {
+      close[i].onclick = function() {
+        var div = this.parentElement;
+        div.style.opacity = "0";
+        setTimeout(function() {
+          div.style.display = "none";
+        }, 600);
+      }
+    }
+  </script>
+</body>
+
+</html>

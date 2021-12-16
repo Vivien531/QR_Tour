@@ -1,0 +1,113 @@
+<div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+  <header class="mdl-layout__header mdl-shadow--6dp">
+    <div class="mdl-layout__header-row">
+      <!-- Title -->
+      <img class="mdl-layout-title" src="/src/whiteLogo.png" alt="logo" style="height:110%;">
+      <!-- Add spacer, to align navigation to the right -->
+      <div class="mdl-layout-spacer"></div>
+      <!-- Navigation. We hide it in small screens. -->
+      <nav class="mdl-navigation mdl-layout--large-screen-only">
+        <a class="mdl-navigation__link" href="/">
+          <p class="underlined">Carte</p>
+        </a>
+        <% if (user) { %>
+          <a class="mdl-navigation__link" href="/dashboard">
+            <p class="underlined">Dashboard</p>
+          </a>
+          <a class="mdl-navigation__link" href="/addPoint">
+            <p class="underlined">Ajouter un lieu</p>
+          </a>
+          <a class="mdl-navigation__link" href="/users/logout">
+            <p class="underlined">Déconnexion</p>
+          </a>
+        <% } %>
+        <% if (!user) { %>
+          <a class="mdl-navigation__link" href="/users/login">
+            <p class="underlined">Connexion</p>
+          </a>
+        <% } %>
+      </nav>
+    </div>
+  </header>
+  <div class="mdl-layout__drawer">
+    <div class="mdl-layout-title">
+      <img src="/src/logo.png" alt="logo" id="logo">
+    </div>
+    <nav class="mdl-navigation">
+      <a class="mdl-navigation__link" href="/">Carte</a>
+      <% if (user) { %>
+        <a class="mdl-navigation__link" href="/dashboard">Dashboard</a>
+        <a class="mdl-navigation__link" href="/addPoint">Ajouter un lieu</a>
+        <a class="mdl-navigation__link" href="/users/logout">Déconnexion</a>
+      <% } %>
+      <% if (!user) { %>
+        <a class="mdl-navigation__link" href="/users/login">Connexion</a>
+      <% } %>
+    </nav>
+  </div>
+  <main class="mdl-layout__content">
+    <div class="page-content">
+      <%- include('./partials/messages'); %>
+
+        <h2 id="descriptionTitle"><%= point.name %></h2>
+
+        <div class="top" id="description">
+          <%- point.descriptionHTML %>
+          </div>
+
+          <div style="height: 30vh; width:100%;" id="mapid"></div>
+        </div>
+      </main>
+    </div>
+
+    <script type="text/javascript">
+      var point = <%- JSON.stringify(point) %>;
+
+      var pointOfInterestIcon = L.icon({
+        iconUrl: '/src/pointOfInterest.png',
+        iconSize: [
+          42, 42
+        ],
+        iconAnchor: [
+          21, 42
+        ],
+        popupAnchor: [0, -42]
+      });
+
+      var geolocationIcon = L.icon({
+        iconUrl: '/src/geolocation.png',
+        iconSize: [42, 42]
+      });
+
+      function onLocationFound(e) {
+        var radius = e.accuracy;
+        L.marker(e.latlng, {icon: geolocationIcon}).addTo(mymap);
+        // L.circle(e.latlng, radius).addTo(mymap);
+      }
+
+      function onLocationError(e) {
+        alert(e.message);
+      }
+
+      var mymap = L.map('mapid').setView([
+        point.position.lng, point.position.lat
+      ], 17);
+
+      mymap.locate({setView: false});
+      mymap.on('locationfound', onLocationFound);
+      mymap.on('locationerror', onLocationError);
+
+      L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoiYnVsbHk0MiIsImEiOiJjanJycDZwenIxd29rM3ludHJvNXhiem1kIn0.udyct1AnSScGg3eIa3VQDw', {
+        attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+        maxZoom: 18,
+        id: 'mapbox/streets-v11',
+        tileSize: 512,
+        zoomOffset: -1,
+        accessToken: 'your.mapbox.access.token'
+      }).addTo(mymap);
+
+      var marker = L.marker([
+        point.position.lng, point.position.lat
+      ], {icon: pointOfInterestIcon}).addTo(mymap);
+      // marker.bindPopup("<p style='text-align: center; font-size:1.5em;'><b>" + point.name + "</b></p><img style='width:40vh;' src='/pictures/" + point.picture + "'>", {maxWidth: "auto"});
+    </script>

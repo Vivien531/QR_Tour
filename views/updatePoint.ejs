@@ -1,0 +1,105 @@
+<div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+  <header class="mdl-layout__header mdl-shadow--6dp">
+    <div class="mdl-layout__header-row">
+      <!-- Title -->
+      <img class="mdl-layout-title" src="/src/whiteLogo.png" alt="logo" style="height:110%;">
+      <!-- Add spacer, to align navigation to the right -->
+      <div class="mdl-layout-spacer"></div>
+      <!-- Navigation. We hide it in small screens. -->
+      <nav class="mdl-navigation mdl-layout--large-screen-only">
+        <a class="mdl-navigation__link" href="/">
+          <p class="underlined">Carte</p>
+        </a>
+        <% if (user) { %>
+          <a class="mdl-navigation__link" href="/dashboard">
+            <p class="underlined">Dashboard</p>
+          </a>
+          <a class="mdl-navigation__link" href="/addPoint">
+            <p class="underlined">Ajouter un lieu</p>
+          </a>
+          <a class="mdl-navigation__link" href="/users/logout">
+            <p class="underlined">Déconnexion</p>
+          </a>
+        <% } %>
+        <% if (!user) { %>
+          <a class="mdl-navigation__link" href="/users/login">
+            <p class="underlined">Connexion</p>
+          </a>
+        <% } %>
+      </nav>
+    </div>
+  </header>
+  <div class="mdl-layout__drawer">
+    <div class="mdl-layout-title">
+      <img src="/src/logo.png" alt="logo" id="logo">
+    </div>
+    <nav class="mdl-navigation">
+      <a class="mdl-navigation__link" href="/">Carte</a>
+      <% if (user) { %>
+        <a class="mdl-navigation__link" href="/dashboard">Dashboard</a>
+        <a class="mdl-navigation__link" href="/addPoint">Ajouter un lieu</a>
+        <a class="mdl-navigation__link" href="/users/logout">Déconnexion</a>
+      <% } %>
+      <% if (!user) { %>
+        <a class="mdl-navigation__link" href="/users/login">Connexion</a>
+      <% } %>
+    </nav>
+  </div>
+  <main class="mdl-layout__content">
+    <div class="page-content">
+      <div class="mdl-progress mdl-js-progress mdl-progress__indeterminate" id="loading"></div>
+      <%- include('./partials/messages'); %>
+        <div style="text-align: center;">
+          <i class="material-icons top" id="loginIcon">edit_location</i>
+        </div>
+        <form action="/updatePoint" method="POST" enctype="multipart/form-data">
+          <div class="mdl-grid">
+            <div class="mdl-textfield mdl-js-textfield mdl-cell mdl-cell--4-col-phone mdl-cell--8-col-tablet mdl-cell--8-col-desktop" style="margin-left:auto; margin-right:auto;">
+              <div id="editor"></div>
+            </div>
+          </div>
+          <input name="description" type="hidden">
+          <input name="descriptionHTML" type="hidden">
+          <input type="hidden" name="_id" value="<%= point._id %>">
+          <input type="hidden" name="updates" value="<%= point.updates %>">
+          <input type="hidden" name="name" value="<%= point.name %>">
+
+          <div class="center bottom top">
+            <button class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--raised mdl-button--colored right" type="submit">
+              Valider
+            </button>
+            <a class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--raised mdl-button--colored left" href="/dashboard" type="button">
+              Annuler
+            </a>
+          </div>
+        </form>
+      </div>
+    </main>
+  </div>
+
+  <script type="text/javascript">
+    var quill = new Quill('#editor', {
+      modules: {
+        toolbar: [
+          ['bold', 'italic', 'image']
+        ]
+      },
+      placeholder: 'Description',
+      theme: 'snow'
+    });
+
+    var form = document.querySelector('form');
+    form.onsubmit = function() {
+      document.getElementById('loading').classList.add("progress");
+      var description = document.querySelector('input[name=description]');
+      var descriptionHTML = document.querySelector('input[name=descriptionHTML]');
+      description.value = JSON.stringify(quill.getContents());
+      descriptionHTML.value = quill.root.innerHTML;
+      console.log(descriptionHTML.value);
+      return;
+    };
+
+    var data = <%- point.description %>;
+    console.log(data);
+    quill.setContents(data);
+  </script>

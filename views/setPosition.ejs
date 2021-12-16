@@ -1,0 +1,136 @@
+<div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+  <header class="mdl-layout__header mdl-shadow--6dp">
+    <div class="mdl-layout__header-row">
+      <!-- Title -->
+      <img class="mdl-layout-title" src="/src/whiteLogo.png" alt="logo" style="height:110%;">
+      <!-- Add spacer, to align navigation to the right -->
+      <div class="mdl-layout-spacer"></div>
+      <!-- Navigation. We hide it in small screens. -->
+      <nav class="mdl-navigation mdl-layout--large-screen-only">
+        <a class="mdl-navigation__link" href="/">
+          <p class="underlined">Carte</p>
+        </a>
+        <% if (user) { %>
+          <a class="mdl-navigation__link" href="/dashboard">
+            <p class="underlined">Dashboard</p>
+          </a>
+          <a class="mdl-navigation__link" href="/addPoint">
+            <p class="underlined">Ajouter un lieu</p>
+          </a>
+          <a class="mdl-navigation__link" href="/users/logout">
+            <p class="underlined">Déconnexion</p>
+          </a>
+        <% } %>
+        <% if (!user) { %>
+          <a class="mdl-navigation__link" href="/users/login">
+            <p class="underlined">Connexion</p>
+          </a>
+        <% } %>
+      </nav>
+    </div>
+  </header>
+  <div class="mdl-layout__drawer">
+    <div class="mdl-layout-title">
+      <img src="/src/logo.png" alt="logo" id="logo">
+    </div>
+    <nav class="mdl-navigation">
+      <a class="mdl-navigation__link" href="/">Carte</a>
+      <% if (user) { %>
+        <a class="mdl-navigation__link" href="/dashboard">Dashboard</a>
+        <a class="mdl-navigation__link" href="/addPoint">Ajouter un lieu</a>
+        <a class="mdl-navigation__link" href="/users/logout">Déconnexion</a>
+      <% } %>
+      <% if (!user) { %>
+        <a class="mdl-navigation__link" href="/users/login">Connexion</a>
+      <% } %>
+    </nav>
+  </div>
+  <main class="mdl-layout__content">
+    <div class="mdl-progress mdl-js-progress mdl-progress__indeterminate" id="loading"></div>
+    <div class="page-content">
+      <div style="width: 100vw; height: 80vh;" id="mapid"></div>
+      <div class="mdl-cell mdl-cell--4-col-phone mdl-cell--8-col-tablet mdl-cell--12-col-desktop">
+        <form id="form" action="/setPosition" method="POST" class="text-center mt-2">
+          <input type="hidden" id="lat" name="lat" value="<%= position.lat %>">
+          <input type="hidden" id="lng" name="lng" value="<%= position.lng %>">
+          <div class="center top bottom">
+            <button class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored" type="submit">
+              Confirmer
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js" integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA==" crossorigin=""></script>
+<script type="text/javascript">
+  var form = document.getElementById('form');
+  form.onsubmit = function() {
+    document.getElementById('loading').classList.add("progress");
+  };
+  document.getElementById('loading').classList.add("progress");
+
+  var position = <%- JSON.stringify(position) %>;
+
+  var pointOfInterestIcon = L.icon({
+    iconUrl: '/src/pointOfInterest.png',
+    iconSize: [
+      42, 42
+    ],
+    iconAnchor: [
+      21, 42
+    ],
+    popupAnchor: [0, -42]
+  });
+
+  var geolocationIcon = L.icon({
+    iconUrl: '/src/geolocation.png',
+    iconSize: [
+      42, 42
+    ],
+    iconAnchor: [21, 21]
+  });
+
+  function onLocationFound(e) {
+    var radius = e.accuracy;
+    L.marker(e.latlng, {icon: geolocationIcon}).addTo(mymap);
+    // L.circle(e.latlng, radius).addTo(mymap);
+  }
+
+  function onLocationError(e) {
+    alert(e.message);
+  }
+
+  var mymap = L.map('mapid').setView([
+    position.lat, position.lng
+  ], 17);
+
+  mymap.locate({setView: false});
+  mymap.on('locationfound', onLocationFound);
+  mymap.on('locationerror', onLocationError);
+
+  L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoiYnVsbHk0MiIsImEiOiJjanJycDZwenIxd29rM3ludHJvNXhiem1kIn0.udyct1AnSScGg3eIa3VQDw', {
+    attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+    maxZoom: 20,
+    id: 'mapbox/streets-v11',
+    tileSize: 512,
+    zoomOffset: -1
+  }).addTo(mymap);
+
+  var selectedPos = L.marker([
+    position.lat, position.lng
+  ], {icon: pointOfInterestIcon}).addTo(mymap);
+
+  mymap.on('click', function(e) {
+    if (selectedPos != undefined) {
+      mymap.removeLayer(selectedPos);
+    };
+    selectedPos = L.marker([
+      e.latlng.lat, e.latlng.lng
+    ], {icon: pointOfInterestIcon}).addTo(mymap);
+    document.getElementById('lat').value = e.latlng.lat;
+    document.getElementById('lng').value = e.latlng.lng;
+  });
+</script>
